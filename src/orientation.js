@@ -39,6 +39,8 @@ export default class Orientation {
   static unlockAllOrientations = () => {};
 
   static addOrientationListener = cb => {};
+  
+  static addAutoRotateListener = cb => {};
 
   static removeOrientationListener = cb => {};
 

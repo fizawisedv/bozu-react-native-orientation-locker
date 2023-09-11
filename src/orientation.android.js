@@ -119,6 +119,18 @@ export default class Orientation {
     );
   };
 
+  static addAutoRotateListener = (cb) => {
+    var key = getKey(cb);
+    LocalEventEmitter =
+      LocalEventEmitter ?? new NativeEventEmitter(OrientationNative);
+    listeners[key] = LocalEventEmitter.addListener(
+      "autoRotateStateDidChange",
+      (body) => {
+        cb(body.autoRotateState);
+      }
+    );
+  };
+  
   static removeDeviceOrientationListener = (cb) => {
     var key = getKey(cb);
     if (!listeners[key]) {

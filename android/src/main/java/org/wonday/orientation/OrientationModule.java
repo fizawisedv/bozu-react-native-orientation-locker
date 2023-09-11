@@ -37,19 +37,48 @@ import java.util.Map;
 
 import javax.annotation.Nullable;
 
+import android.os.Handler;
+import android.os.Looper;
+import android.database.ContentObserver;
+import java.util.Collection;
+import android.net.Uri;
+
 public class OrientationModule extends ReactContextBaseJavaModule implements OrientationListeners {
 
     final BroadcastReceiver mReceiver;
     final OrientationEventListener mOrientationListener;
     final ReactApplicationContext ctx;
+    private static ReactApplicationContext ctxStatic;
     private boolean isLocked = false;
     private boolean isConfigurationChangeReceiverRegistered = false;
     private String lastOrientationValue = "";
     private String lastDeviceOrientationValue = "";
-
+    private ContentObserver rotationObserver = new ContentObserver(new Handler(Looper.getMainLooper())) {
+            @Override
+            public void onChange(boolean selfChange, Collection<Uri> uris, int flags) {
+            // System.out.println("onCHANGE() of auto rotate state self change: " + selfChange);
+            // System.out.println("onCHANGE() of auto rotate state uris: " + uris);
+            // System.out.println("onCHANGE() of auto rotate state flags: " + flags);
+            boolean val = OrientationModule.personalGetAutoRotateState();
+            // System.out.println("onCHANGE() of auto rotate state val by getautorotatestate: " + val);
+            
+                    WritableMap params = Arguments.createMap();
+                    params.putString("autoRotateState", val ? "true" : "false");
+                    if (ctx.hasActiveCatalystInstance()) {
+                        ctx
+                        .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
+                        .emit("autoRotateStateDidChange", params);
+                    }
+            }
+        };
     public OrientationModule(ReactApplicationContext reactContext) {
         super(reactContext);
         ctx = reactContext;
+        ctxStatic=ctx;
+
+        ctx.getContentResolver().registerContentObserver(android.provider.Settings.System.getUriFor
+        (android.provider.Settings.System.ACCELEROMETER_ROTATION),
+        true,rotationObserver );
 
         mOrientationListener = new OrientationEventListener(reactContext, SensorManager.SENSOR_DELAY_UI) {
 
@@ -338,6 +367,14 @@ public class OrientationModule extends ReactContextBaseJavaModule implements Ori
       resolver,
       android.provider.Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
       callback.invoke(rotateLock);
+    }
+
+    public static boolean personalGetAutoRotateState() {
+      final ContentResolver resolver = ctxStatic.getContentResolver();
+      boolean rotateLock = android.provider.Settings.System.getInt(
+      resolver,
+      android.provider.Settings.System.ACCELEROMETER_ROTATION, 0) == 1;
+      return rotateLock;
     }
 
     @Override

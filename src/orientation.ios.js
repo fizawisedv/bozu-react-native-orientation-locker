@@ -116,6 +116,10 @@ export default class Orientation {
     );
   };
 
+  static addAutoRotateListener = (cb) => {
+    console.log("OrientationLocker: AutoRotateListener not supported in iOS")
+  };
+
   static removeDeviceOrientationListener = cb => {
     var key = getKey(cb);
     if (!listeners[key]) {

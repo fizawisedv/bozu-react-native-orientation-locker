@@ -46,6 +46,7 @@ declare class Orientation {
   static removeOrientationListener(callback: (orientation: OrientationType) => void): void;
 
   static addDeviceOrientationListener(callback: (deviceOrientation: OrientationType) => void): void;
+  static addAutoRotateListener(callback: (autoRotateState: string) => void): void;
 
   static removeDeviceOrientationListener(callback: (deviceOrientation: OrientationType) => void): void;
 
